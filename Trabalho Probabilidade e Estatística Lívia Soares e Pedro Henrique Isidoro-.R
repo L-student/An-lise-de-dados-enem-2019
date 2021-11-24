@@ -1,16 +1,17 @@
 
+
 #Trabalho Probabilidade e Estatística Lívia Soares e Pedro Henrique Isidoro
 #Lendo o arquivo em formato .csv
 
 ENEM <- read.csv2('ENEM2.csv' , sep=',' , dec=',')
 
 #Chamar alguns pacotes para serem usados
-
+library(psych)
 library(gridExtra)
 library(formattable)
 library(dplyr)
-library(psych)
 
+#QUESTÃO 01
 #Criar um boxplot com as NOTA_ENEM
 boxplot(ENEM$NOTA_ENEN,col = "pink", ylab = "Média no ENEM 2019", main = "Boxplot NOTAS ENEM 2019")
 
@@ -24,6 +25,7 @@ FreqAbs <-prop.table(FreqRel)
 FreqAbs
 FreqAbs <-percent(c(FreqAbs))
 FreqAbs
+
 #Criar uma tabela com as frequências
 Tabela_frequencias <- data.frame(
   Frequencia_Relativa = c(FreqRel),
@@ -37,7 +39,10 @@ formattable(Tabela_frequencias)
 #800 - 300 = 500 
 #500 / 10 = 50
 
-hist(ENEM$NOTA_ENEN, breaks = 50, col = "purple",xlab = "Média geral", ylab = "Frequência", main = "Histograma com a frequência das notas - ENEM 2019(Lívia)")
+hist(ENEM$NOTA_ENEN, breaks = 50, 
+     col = "green",xlab = "Média geral", 
+     ylab = "Frequência", 
+     main = "Histograma com a frequência das notas - ENEM 2019")
 
 
 #Gerar um gráfico de barras com as NOTA_ENEN agrupado pelos quartis e sexo e interpretar os valores.
@@ -92,11 +97,137 @@ Per_Gen <-matrix(data = Percentil_MF, ncol = 4, byrow = TRUE,
 barplot(Per_Gen,
         main = "Mulheres e homens por percentil",
         xlab = "Percentis",
-        col = c("purple","green")
+        col = c("purple","green"),
+        beside = TRUE
 )
-legend("topleft",
-       c("Mulheres","Homens"),
-       fill = c("purple","green")
+legend("topright",
+      fill = c("purple","green"),
+      c("Mulheres","Homens")
+       
 )
+
+#Escolher duas variáveis (colunas) e gerar os gráficos mais adequados para tais colunas.
+
+#gráfico de pontos contagem  x nota redação x idade
+#carrega os pacotes                            
+library(ggplot2)
+library(tidyverse)
+
+#código
+ENEM %>%
+  group_by(NU_NOTA_REDACAO, NU_IDADE) %>%
+  summarise(
+    contagem = n()
+  ) %>%
+  ggplot(aes(x = NU_NOTA_REDACAO, y = contagem, fill = NU_IDADE, label = contagem)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Nota de redação por município",
+       subtitle = "Conjunto de dados ENEM 2019",
+       x = "Nota redação", y = "Contagem")
+#Escolher duas variáveis (colunas) e gerar os gráficos mais adequados para tais colunas.
+
+#gráfico de pontos contagem  x nota redação x Município
+#carrega os pacotes                            
+library(ggplot2)
+library(tidyverse)
+
+#código
+ENEM %>%
+  group_by(NU_NOTA_REDACAO, NO_MUNICIPIO_PROVA) %>%
+  summarise(
+    contagem = n()
+  ) %>%
+  ggplot(aes(x = NU_NOTA_REDACAO, y = contagem, fill = NO_MUNICIPIO_PROVA, label = contagem)) + 
+  geom_bar(stat = "identity") +
+  labs(title = "Nota de redação por município",
+       subtitle = "Conjunto de dados ENEM 2019",
+       x = "Nota redação", y = "Contagem")
+
+
+################################################################################  
+#gráfico de pontos nota de redação  x nota geral
+#carrega os pacotes                            
+library(ggplot2)
+library(tidyverse)
+
+#acha o arquivo no diretório
+dados = read.csv2(file.choose())
+dados
+#CÓDIGO
+dados %>%
+  ggplot(aes(x = NU_NOTA_REDACAO, y = NOTA_ENEN, color = TP_COR_RACA)) + geom_point()+
+  geom_smooth(method = "lm") + labs(title = "Comparação das notas de redação com a nota geral",
+                                    subtitle = "Conjunto de dados ENEM 2019",
+                                    x = "Nota de redação", y = "Nota geral")
+
+################################################################################
+#gráfico de pontos contagem  x idioma x sexo
+#carrega os pacotes                            
+library(ggplot2)
+library(tidyverse)
+#acha o arquivo no diretório
+dados = read.csv2(file.choose())
+dados
+
+#código
+dados %>%
+  group_by(TP_LINGUA, TP_SEXO) %>%
+  summarise(
+    contagem = n()
+  ) %>%
+  ggplot(aes(x = TP_LINGUA, y = contagem, fill = TP_SEXO, label = contagem)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_label(position = position_dodge(width = 1), alpha = 0.5) +
+  labs(title = "Distribuição dos idiomas por sexo",
+       subtitle = "Conjunto de dados ENEM 2019",
+       x = "Idiomas", y = "Contagem")
+
+
+################################################################################
+#gráfico de pontos nota de matemática  x ciências humanas
+#carrega os pacotes                            
+library(ggplot2)
+library(tidyverse)
+
+#acha o arquivo no diretório
+dados = read.csv2(file.choose())
+dados
+#CÓDIGO
+dados %>%
+  ggplot(aes(x = NU_NOTA_CH, y = NU_NOTA_MT, color = NU_NOTA_CH)) + geom_point(color = "green", size = 0.5, alpha = 0.5)+
+  geom_smooth() + 
+  labs(title = "Comparação entre as notas de humanas x matemática",
+       subtitle = "Conjunto de dados ENEM 2019",
+       x = "Nota de ciências humanas", y = "Nota de matemática")
+
+#QUESTÃO 02
+#Primeiro foi separado igaci do resto do municípios de prova
+igaci <- filter(ENEM, ENEM$NO_MUNICIPIO_PROVA == "Igaci")
+igaci %>%
+  group_by(TP_COR_RACA, TP_LINGUA) %>%
+  summarise(
+    contagem = n()
+  ) %>%
+  ggplot(aes(x = TP_COR_RACA, y = contagem, fill = TP_LINGUA, label = contagem)) + 
+  
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Idioma vesus raça - Igaci",
+       subtitle = "Conjunto de dados ENEM 2019",
+       x = "Raça declarada", y = "Contagem")
+
+igaci %>%
+  group_by(NU_NOTA_LC, TP_LINGUA) %>%
+  ggplot(aes(x = NU_NOTA_LC, y = NU_NOTA_MT, color = TP_SEXO)) + 
+  geom_smooth() +
+  geom_point()+
+  labs(title = "Nota em linguagens x Nota matemática - Igaci",
+       subtitle = "Conjunto de dados ENEM 2019",
+       x = "Notas linguagens", y = "Notas matemática")
+
+hist(igaci$NU_IDADE, breaks = 20, 
+     col = "red",xlab = "Idade", 
+     ylab = "Pessoas", 
+     main = "Histograma com a quantidade de pessoas por idade em Igaci")
+
 
 
